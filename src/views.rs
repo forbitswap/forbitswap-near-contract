@@ -80,8 +80,8 @@ impl Contract {
 
     /// Get pools from `from` index and `limit` specifies how many pools to get.
     /// `limit` will be limited to last pool index if the given `limit` is out of pool length
-    pub fn get_pools(&self, from: u64, limit: u64) -> Vec<PoolInfo> {
-        (from..std::cmp::min(limit, self.pools.len()))
+    pub fn get_pools(&self, from_index: u64, limit: u64) -> Vec<PoolInfo> {
+        (from_index..std::cmp::min(limit, self.pools.len()))
             .map(|index| self.get_pool(index))
             .collect()
     }
@@ -142,9 +142,24 @@ impl Contract {
     }
 
     /// Returns balance of the deposit for given user in the exchange.
-    pub fn get_depoited_token(&self, account_id: ValidAccountId, token_id: ValidAccountId) -> U128 {
+    pub fn get_deposited_token(
+        &self,
+        account_id: ValidAccountId,
+        token_id: ValidAccountId,
+    ) -> U128 {
         unimplemented!()
     }
 
-    
+    pub fn predict_remove_liquidity(&self, pool_id: u64, shares: U128) -> Vec<U128> {
+        let pool = self.pools.get(pool_id).expect("ERR_NO_POOL");
+        pool.predict_remove_liquidity(shares.into())
+            .into_iter()
+            .map(|x| U128(x))
+            .collect()
+    }
+
+    pub fn get_account_balance(&self, account_id: AccountId, token_id: AccountId) -> U128 {
+        let account = self.internal_get_account(&account_id).unwrap();
+        U128::from(account.get_balance(&token_id).unwrap())
+    }
 }

@@ -88,6 +88,7 @@ impl Contract {
     #[payable]
     pub fn add_simple_pool(&mut self, tokens: Vec<ValidAccountId>, fee: u32) -> u64 {
         check_duplicate_tokens(&tokens);
+        self.internal_check_existed_pool(&tokens);
         self.internal_add_pool(Pool::SimplePool(SimplePool::new(
             self.pools.len() as u32,
             tokens,
@@ -210,6 +211,24 @@ impl Contract {
             .to_amount(),
         )
     }
+
+    pub fn is_lp(&self, account_id: &ValidAccountId, pool_id: u64) -> bool {
+        // let filterd_pools: Vec<SimplePool> = pools.iter().filter(|a|a);
+        self.pools
+            .get(pool_id)
+            .expect("ERR_NO_POOL")
+            .is_lp(account_id.as_ref())
+            .into()
+
+        // for pool in pools.iter() {
+        //     if pool.is_lp(&account_id) {
+        //         return true;
+        //     } else {
+        //         return false;
+        //     }
+        // }
+        // false
+    }
 }
 
 impl Contract {
@@ -322,6 +341,17 @@ impl Contract {
         );
         self.pools.replace(pool_id, &pool);
         amount_out
+    }
+
+    /// Program will panic if input token pair exsists.
+    fn internal_check_existed_pool(&self, tokens: &Vec<ValidAccountId>) {
+        assert_eq!(tokens.len(), 2, "INVALID NUMBER OF TOKENS");
+
+        let pools = &self.pools;
+        for pool in pools.iter() {
+            let is_existed = pool.check_existed_pool(&tokens);
+            assert!(!is_existed, "THIS POOL PAIR ALREADY EXISTED!!!");
+        }
     }
 }
 

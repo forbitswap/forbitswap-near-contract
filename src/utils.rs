@@ -16,20 +16,20 @@ construct_uint! {
 }
 
 // 10^24 yocto near
-pub const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
+// pub const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
 pub const NUM_TOKENS: usize = 2;
 
 /// Attach no deposit.
-pub const NO_DEPOSIT: u128 = 0;
+// pub const NO_DEPOSIT: u128 = 0;
 
 /// 10T gas for basic operation
-pub const GAS_FOR_BASIC_OP: Gas = 10_000_000_000_000;
+// pub const GAS_FOR_BASIC_OP: Gas = 10_000_000_000_000;
 
 /// hotfix_insuffient_gas_for_mft_resolve_transfer.
 pub const GAS_FOR_RESOLVE_TRANSFER: Gas = 20_000_000_000_000;
 
-pub const GAS_FOR_FT_TRANSFER_CALL: Gas = 25_000_000_000_000 + GAS_FOR_RESOLVE_TRANSFER;
+// pub const GAS_FOR_FT_TRANSFER_CALL: Gas = 25_000_000_000_000 + GAS_FOR_RESOLVE_TRANSFER;
 
 /// Amount of gas for fungible token transfers, increased to 20T to support AS token contracts.
 pub const GAS_FOR_FT_TRANSFER: Gas = 20_000_000_000_000;

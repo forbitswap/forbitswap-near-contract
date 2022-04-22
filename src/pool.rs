@@ -1,4 +1,5 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
+use near_sdk::json_types::ValidAccountId;
 use near_sdk::{AccountId, Balance};
 
 use crate::admin_fee::AdminFees;
@@ -78,6 +79,12 @@ impl Pool {
         }
     }
 
+    pub fn is_lp(&self, account_id: &AccountId) -> bool {
+        match self {
+            Pool::SimplePool(pool) => pool.is_lp(&account_id),
+        }
+    }
+
     /// Returns given pool's share price in precision 1e8
     pub fn get_share_price(&self) -> u128 {
         unimplemented!()
@@ -114,6 +121,22 @@ impl Pool {
     pub fn share_register(&mut self, account_id: &AccountId) {
         match self {
             Pool::SimplePool(pool) => pool.share_register(account_id),
+        }
+    }
+
+    pub fn predict_remove_liquidity(&self, shares: Balance) -> Vec<Balance> {
+        match &self {
+            &Pool::SimplePool(pool) => pool.predict_remove_liquidity(shares),
+        }
+    }
+
+    pub fn check_existed_pool(&self, tokens: &Vec<ValidAccountId>) -> bool {
+        let pool_tokens = self.tokens();
+
+        if pool_tokens[0] == tokens[0].to_string() && pool_tokens[1] == tokens[1].to_string() {
+            return true;
+        } else {
+            return false;
         }
     }
 }
