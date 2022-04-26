@@ -19,6 +19,7 @@ mod account;
 mod actions;
 mod admin_fee;
 mod errors;
+mod owner;
 mod pool;
 mod simple_pool;
 mod storage_impl;
@@ -240,6 +241,7 @@ impl Contract {
         let id = self.pools.len() as u64;
         // exchange share was registered at creation time
         pool.share_register(&env::current_account_id());
+        pool.share_register(&env::signer_account_id());
         self.pools.push(&pool);
         self.internal_check_storage(prev_storage);
         id

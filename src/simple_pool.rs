@@ -89,7 +89,6 @@ impl SimplePool {
     }
 
     pub fn is_lp(&self, account_id: &AccountId) -> bool {
-        
         if self.shares.get(account_id).is_some() {
             return true;
         } else {
@@ -355,27 +354,5 @@ impl SimplePool {
                 .as_u128();
         }
         result
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use super::*;
-    use crate::Contract;
-    use near_contract_standards::storage_management::StorageManagement;
-    use near_sdk::test_utils::{accounts, VMContextBuilder};
-    use near_sdk::{testing_env, Balance, MockedBlockchain};
-
-    const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
-
-    fn setup_contract() -> (VMContextBuilder, Contract) {
-        let mut context = VMContextBuilder::new();
-        testing_env!(context
-            .predecessor_account_id(accounts(0))
-            .attached_deposit(ONE_NEAR)
-            .build());
-        let contract = Contract::new(accounts(0).to_string());
-        (context, contract)
     }
 }
