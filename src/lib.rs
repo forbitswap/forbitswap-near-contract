@@ -1,3 +1,4 @@
+use near_contract_standards::fungible_token::core_impl::ext_fungible_token;
 use actions::{ActionResult, SwapAction};
 use admin_fee::AdminFees;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
@@ -10,7 +11,7 @@ use pool::Pool;
 use simple_pool::SimplePool;
 use std::collections::HashMap;
 use utils::check_duplicate_tokens;
-
+use crate::utils::{ext_self, GAS_FOR_FT_TRANSFER, GAS_FOR_RESOLVE_TRANSFER};
 use crate::account::Account;
 use crate::actions::Action;
 use crate::errors::*;
@@ -221,6 +222,7 @@ impl Contract {
         let id = self.pools.len() as u64;
         // exchange share was registered at creation time
         pool.share_register(&env::current_account_id());
+        pool.share_register(&env::signer_account_id());
         self.pools.push(&pool);
         self.internal_check_storage(prev_storage);
         id
@@ -322,6 +324,30 @@ impl Contract {
         );
         self.pools.replace(pool_id, &pool);
         amount_out
+    }
+
+    pub(crate) fn internal_send_swapped_tokens(
+        &self,
+        sender_id: &AccountId,
+        token_id: &AccountId,
+        amount: Balance,
+    ) -> Promise {
+        ext_fungible_token::ft_transfer(
+            sender_id.clone(),
+            U128(amount),
+            None,
+            token_id,
+            1,
+            GAS_FOR_FT_TRANSFER,
+        )
+        .then(ext_self::exchange_callback_post_withdraw(
+            token_id.clone(),
+            sender_id.clone(),
+            U128(amount),
+            &env::current_account_id(),
+            0,
+            GAS_FOR_RESOLVE_TRANSFER,
+        ))
     }
 }
 

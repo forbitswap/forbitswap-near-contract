@@ -2,7 +2,7 @@
 use std::collections::HashSet;
 
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{ext_contract, AccountId, Balance, Gas};
@@ -56,7 +56,7 @@ pub fn check_duplicate_tokens(tokens: &Vec<ValidAccountId>) {
     assert_eq!(tokens.len(), token_set.len(), "{}", ERR_DUPLICATE_TOKENS);
 }
 
-pub fn add_to_collection(c: &mut LookupMap<AccountId, Balance>, key: &AccountId, value: Balance) {
+pub fn add_to_collection(c: &mut UnorderedMap<AccountId, Balance>, key: &AccountId, value: Balance) {
     let prev_value = c.get(&key).unwrap_or(0);
     c.insert(key, &(value + prev_value));
 }
@@ -81,6 +81,13 @@ impl Default for SwapVolume {
 #[ext_contract(ext_self)]
 pub trait HanuExchange {
     fn exchange_callback_post_withdraw(
+        &mut self,
+        token_id: AccountId,
+        sender_id: AccountId,
+        amount: U128,
+    );
+
+    fn exchange_callback_post_swap(
         &mut self,
         token_id: AccountId,
         sender_id: AccountId,

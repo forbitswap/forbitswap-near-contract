@@ -3,10 +3,10 @@ use std::cmp::min;
 use crate::admin_fee::AdminFees;
 use crate::StorageKey;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::LookupMap;
+use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::ValidAccountId;
 use near_sdk::{env, AccountId, Balance};
-
+use crate::*;
 use crate::errors::{ERR14_LP_ALREADY_REGISTERED, ERR31_ZERO_AMOUNT, ERR32_ZERO_SHARES};
 
 use crate::utils::{add_to_collection, uint_sqrt, SwapVolume, FEE_DIVISOR, NUM_TOKENS, U256, INIT_SHARES_SUPPLY};
@@ -26,9 +26,11 @@ pub struct SimplePool {
     /// Obsolete, reserve to simplify upgrade.
     pub referral_fee: u32,
     /// Shares of the pool by liquidity providers.
-    pub shares: LookupMap<AccountId, Balance>,
+    pub shares: UnorderedMap<AccountId, Balance>,
     /// Total number of shares.
     pub shares_total_supply: Balance,
+
+    first_provider: Option<AccountId>
 }
 
 impl SimplePool {
@@ -55,15 +57,16 @@ impl SimplePool {
             exchange_fee,
             referral_fee,
             // [AUDIT 11]
-            shares: LookupMap::new(StorageKey::Shares { pool_id: id }),
+            shares: UnorderedMap::new(StorageKey::Shares { pool_id: id }),
             shares_total_supply: 0,
+            first_provider: None,
         }
     }
 
     /// Register given account with 0 balance in shares.
     /// Storage payment should be checked by caller.
     pub fn share_register(&mut self, account_id: &AccountId) {
-        if self.shares.contains_key(account_id) {
+        if self.shares.get(account_id).is_some() {
             env::panic(ERR14_LP_ALREADY_REGISTERED.as_bytes());
         }
 
@@ -93,7 +96,6 @@ impl SimplePool {
             self.token_account_ids.len(),
             "ERR_WRONG_TOKEN_COUNT"
         );
-
         let shares = if self.shares_total_supply > 0 {
             let mut fair_supply = U256::max_value();
             for i in 0..self.token_account_ids.len() {
@@ -284,6 +286,11 @@ impl SimplePool {
             )
             .as_bytes(),
         );
+        
+        let fee_charge = amount_in * self.total_fee as u128 / FEE_DIVISOR as u128;
+        let fee_as_share = (U256::from(fee_charge * self.shares_total_supply) / U256::from(self.amounts[in_idx])).as_u128();
+        let first_provider_earn = 80 * fee_as_share / 100;
+        let other_provider_earn = 20 * fee_as_share / 100 / (self.shares.len() - 1) as u128;
 
         let prev_invariant =
             uint_sqrt(U256::from(self.amounts[in_idx]) * U256::from(self.amounts[out_idx]));
@@ -309,12 +316,21 @@ impl SimplePool {
         if let Some(referral_id) = &admin_fee.referral_id {
             if admin_fee.referral_fee > 0
                 && numerator > U256::zero()
-                && self.shares.contains_key(referral_id)
+                && self.shares.get(referral_id).is_some()
             {
                 let denominator = new_invariant * FEE_DIVISOR / admin_fee.referral_fee;
                 self.mint_shares(referral_id, (numerator / denominator).as_u128());
             }
         }
+        // if self.total_fee > 0 {
+        //     let shares = self.shares.to_vec();
+        //     let first_provider = self.first_provider.as_ref().unwrap();
+        //     let first_provider_share = self.shares.get(&first_provider).unwrap();
+        //     self.shares.insert(&first_provider, &(first_provider_share + first_provider_earn));
+        //     for i in 0..shares.len() {
+        //         add_to_collection(&mut self.shares, &shares[i].0, shares[i].1 + other_provider_earn);
+        //     }
+        // }
 
         // Keeping track of volume per each input traded separately.
         // Reported volume with fees will be sum of `input`, without fees will be sum of `output`.
