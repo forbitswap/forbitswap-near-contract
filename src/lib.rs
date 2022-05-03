@@ -20,6 +20,7 @@ mod account;
 mod actions;
 mod admin_fee;
 mod errors;
+mod owner;
 mod pool;
 mod simple_pool;
 mod storage_impl;
@@ -89,6 +90,7 @@ impl Contract {
     #[payable]
     pub fn add_simple_pool(&mut self, tokens: Vec<ValidAccountId>, fee: u32) -> u64 {
         check_duplicate_tokens(&tokens);
+        self.internal_check_existed_pool(&tokens);
         self.internal_add_pool(Pool::SimplePool(SimplePool::new(
             self.pools.len() as u32,
             tokens,
@@ -211,6 +213,24 @@ impl Contract {
             .to_amount(),
         )
     }
+
+    pub fn is_lp(&self, account_id: &ValidAccountId, pool_id: u64) -> bool {
+        // let filterd_pools: Vec<SimplePool> = pools.iter().filter(|a|a);
+        self.pools
+            .get(pool_id)
+            .expect("ERR_NO_POOL")
+            .is_lp(account_id.as_ref())
+            .into()
+
+        // for pool in pools.iter() {
+        //     if pool.is_lp(&account_id) {
+        //         return true;
+        //     } else {
+        //         return false;
+        //     }
+        // }
+        // false
+    }
 }
 
 impl Contract {
@@ -326,28 +346,15 @@ impl Contract {
         amount_out
     }
 
-    pub(crate) fn internal_send_swapped_tokens(
-        &self,
-        sender_id: &AccountId,
-        token_id: &AccountId,
-        amount: Balance,
-    ) -> Promise {
-        ext_fungible_token::ft_transfer(
-            sender_id.clone(),
-            U128(amount),
-            None,
-            token_id,
-            1,
-            GAS_FOR_FT_TRANSFER,
-        )
-        .then(ext_self::exchange_callback_post_withdraw(
-            token_id.clone(),
-            sender_id.clone(),
-            U128(amount),
-            &env::current_account_id(),
-            0,
-            GAS_FOR_RESOLVE_TRANSFER,
-        ))
+    /// Program will panic if input token pair exsists.
+    fn internal_check_existed_pool(&self, tokens: &Vec<ValidAccountId>) {
+        assert_eq!(tokens.len(), 2, "INVALID NUMBER OF TOKENS");
+
+        let pools = &self.pools;
+        for pool in pools.iter() {
+            let is_existed = pool.check_existed_pool(&tokens);
+            assert!(!is_existed, "THIS POOL PAIR ALREADY EXISTED!!!");
+        }
     }
 }
 

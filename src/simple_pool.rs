@@ -5,11 +5,14 @@ use crate::StorageKey;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
 use near_sdk::json_types::ValidAccountId;
+use near_sdk::serde::Serialize;
 use near_sdk::{env, AccountId, Balance};
 use crate::*;
 use crate::errors::{ERR14_LP_ALREADY_REGISTERED, ERR31_ZERO_AMOUNT, ERR32_ZERO_SHARES};
 
-use crate::utils::{add_to_collection, uint_sqrt, SwapVolume, FEE_DIVISOR, NUM_TOKENS, U256, INIT_SHARES_SUPPLY};
+use crate::utils::{
+    add_to_collection, uint_sqrt, SwapVolume, FEE_DIVISOR, INIT_SHARES_SUPPLY, NUM_TOKENS, U256,
+};
 
 #[derive(BorshSerialize, BorshDeserialize)]
 pub struct SimplePool {
@@ -88,6 +91,14 @@ impl SimplePool {
         &self.token_account_ids
     }
 
+    pub fn is_lp(&self, account_id: &AccountId) -> bool {
+        if self.shares.get(account_id).is_some() {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /// adds the amounts of tokens to liquidity pool and returns number of shares that this user receives.
     /// Updates amount to amount kept in the pool.
     pub fn add_liquidity(&mut self, sender_id: &AccountId, amounts: &mut Vec<Balance>) -> Balance {
@@ -112,7 +123,13 @@ impl SimplePool {
                 assert!(amount > 0, "{}", ERR31_ZERO_AMOUNT);
                 self.amounts[i] += amount;
                 amounts[i] = amount;
-                println!("Amount[{}]: {}, Self amount[{}]: {}", i, amount.clone(), i, self.amounts[i].clone());
+                println!(
+                    "Amount[{}]: {}, Self amount[{}]: {}",
+                    i,
+                    amount.clone(),
+                    i,
+                    self.amounts[i].clone()
+                );
             }
             fair_supply.as_u128()
         } else {
@@ -128,14 +145,15 @@ impl SimplePool {
             format!(
                 "Liquidity added {:?}, minted {} shares",
                 amounts
-                .iter()
-                .zip(self.token_account_ids.iter())
-                .map(|(amount, token_id)| format!("{} {}", amount, token_id))
-                .collect::<Vec<String>>(),
+                    .iter()
+                    .zip(self.token_account_ids.iter())
+                    .map(|(amount, token_id)| format!("{} {}", amount, token_id))
+                    .collect::<Vec<String>>(),
                 shares
             )
             .as_bytes(),
         );
+
         // let shares = if self.shares_total_supply > 0 {
         //     let mut fair_supply = U256::max_value();
         //     for i in 0..self.token_account_ids.len() {
@@ -338,5 +356,19 @@ impl SimplePool {
         self.volumes[in_idx].output.0 += amount_out;
 
         amount_out
+    }
+
+    pub fn predict_remove_liquidity(&self, shares: Balance) -> Vec<u128> {
+        let num_tokens = self.token_account_ids.len();
+        let mut result = vec![0u128; num_tokens];
+        for i in 0..num_tokens {
+            result[i] = U256::from(self.amounts[i])
+                .checked_mul(shares.into())
+                .unwrap()
+                .checked_div(self.shares_total_supply.into())
+                .unwrap_or_default()
+                .as_u128();
+        }
+        result
     }
 }
