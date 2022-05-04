@@ -86,11 +86,4 @@ pub trait HanuExchange {
         sender_id: AccountId,
         amount: U128,
     );
-
-    fn exchange_callback_post_swap(
-        &mut self,
-        token_id: AccountId,
-        sender_id: AccountId,
-        amount: U128,
-    );
 }
