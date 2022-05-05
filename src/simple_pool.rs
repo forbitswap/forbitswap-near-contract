@@ -236,6 +236,28 @@ impl SimplePool {
             .expect("ERR_MISSING_TOKEN")
     }
 
+    /// Returns number of tokens in income, given amount.
+    /// Tokens are provided as indexes into token list for given pool.
+    fn internal_get_income(
+        &self,
+        token_in: usize, // index of token_in in pool
+        token_out: usize, // index of token_out in pool
+        amount_out: Balance,
+    ) -> Balance {
+        let in_balance = U256::from(self.amounts[token_in]);
+        let out_balance = U256::from(self.amounts[token_out]);
+        assert!(
+            in_balance > U256::zero()
+                && out_balance > U256::zero()
+                && token_in != token_out
+                && amount_out > 0,
+            "ERR_INVALID"
+        );
+
+        (in_balance - (in_balance * out_balance / out_balance - amount_out))
+            .as_u128()
+    }
+
     /// Returns number of tokens in outcome, given amount.
     /// Tokens are provided as indexes into token list for given pool.
     fn internal_get_return(
@@ -257,6 +279,19 @@ impl SimplePool {
         let amount_with_fee = U256::from(amount_in) * U256::from(FEE_DIVISOR - self.total_fee);
         (amount_with_fee * out_balance / (U256::from(FEE_DIVISOR) * in_balance + amount_with_fee))
             .as_u128()
+    }
+
+    pub fn get_income(
+        &self, 
+        token_in: &AccountId, 
+        token_out: &AccountId,
+        amount_out: Balance, 
+    ) -> Balance {
+        self.internal_get_income(
+            self.token_index(token_in), 
+            self.token_index(token_out), 
+            amount_out
+        )
     }
 
     pub fn get_return(
@@ -283,7 +318,6 @@ impl SimplePool {
 
     /// Swap `token_amount_in` of `token_in` token into `token_out` and return how much was received.
     /// Assuming that `token_amount_in` was already received from `sender_id`.
-
     pub fn swap(
         &mut self,
         token_in: &AccountId,

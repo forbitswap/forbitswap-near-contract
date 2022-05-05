@@ -58,6 +58,19 @@ impl Pool {
         }
     }
 
+    /// Returns how many tokens will one need to input in order to get the desired token_out
+    pub fn get_income(
+        &self,
+        token_in: &AccountId,
+        token_out: &AccountId,
+        amount_out: Balance,
+        // fees: &AdminFees,
+    ) -> Balance {
+        match self {
+            Pool::SimplePool(pool) => pool.get_income(token_in, token_out, amount_out),
+        }
+    }
+
     /// Return share decimal.
     pub fn get_share_decimal(&self) -> u8 {
         match self {

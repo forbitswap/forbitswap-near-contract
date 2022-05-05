@@ -9,6 +9,7 @@ use near_sdk::{
 
 use crate::pool::Pool;
 use crate::utils::SwapVolume;
+use crate::errors::*;
 use crate::*;
 
 #[derive(Serialize)]
@@ -84,6 +85,32 @@ impl Contract {
         (from_index..std::cmp::min(limit, self.pools.len()))
             .map(|index| self.get_pool(index))
             .collect()
+    }
+
+    /// Given specific pool, returns amount of token_out recevied swapping amount_in of token_in.
+    pub fn get_return(
+        &self,
+        pool_id: u64,
+        token_in: ValidAccountId,
+        amount_in: U128,
+        token_out: ValidAccountId,
+    ) -> U128 {
+        let pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
+        pool.get_return(token_in.as_ref(), amount_in.into(), token_out.as_ref())
+            .into()
+    }
+
+    /// Given specific pool, returns amount of token_out recevied swapping amount_in of token_in.
+    pub fn get_income(
+        &self,
+        pool_id: u64,
+        token_in: ValidAccountId,
+        amount_in: U128,
+        token_out: ValidAccountId,
+    ) -> U128 {
+        let pool = self.pools.get(pool_id).expect(ERR85_NO_POOL);
+        pool.get_income(token_in.as_ref(), token_out.as_ref(), amount_in.into())
+            .into()
     }
 
     /// Get a single pool by given `id`
