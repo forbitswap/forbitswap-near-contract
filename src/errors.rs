@@ -33,7 +33,7 @@ pub const ERR32_ZERO_SHARES: &str = "E32: minting zero shares";
 pub const ERR41_WRONG_ACTION_RESULT: &str = "E41: wrong action result type";
 
 // // Contract Level
-// pub const ERR51_CONTRACT_PAUSED: &str = "E51: contract paused";
+pub const ERR51_CONTRACT_PAUSED: &str = "E51: contract paused";
 
 // // Swap
 // pub const ERR60_DECIMAL_ILLEGAL: &str = "E60: illegal decimal";
