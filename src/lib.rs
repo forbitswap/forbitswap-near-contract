@@ -1,8 +1,12 @@
+use std::convert::TryInto;
+use std::fmt;
+
 use actions::{ActionResult, SwapAction};
 use admin_fee::AdminFees;
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::{LookupMap, UnorderedSet, Vector};
 use near_sdk::json_types::{ValidAccountId, U128};
+use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{
     assert_one_yocto, env, near_bindgen, BorshStorageKey, Promise, PromiseResult, StorageUsage,
 };
@@ -37,6 +41,23 @@ pub(crate) enum StorageKey {
     Whitelist,
     Shares { pool_id: u32 },
     Pools,
+    Guardian,
+}
+
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[serde(crate = "near_sdk::serde")]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Debug))]
+pub enum RunningState {
+    Running,
+    Paused,
+}
+impl fmt::Display for RunningState {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            RunningState::Running => write!(f, "Running"),
+            RunningState::Paused => write!(f, "Paused"),
+        }
+    }
 }
 
 #[near_bindgen]
@@ -57,6 +78,11 @@ pub struct Contract {
 
     /// Set of whitelisted tokens by "owner"
     whitelisted_tokens: UnorderedSet<AccountId>,
+
+    /// Set of guardians.
+    guardians: UnorderedSet<AccountId>,
+    /// Running state
+    state: RunningState,
 }
 
 impl Default for Contract {
@@ -68,6 +94,8 @@ impl Default for Contract {
             accounts: LookupMap::new(StorageKey::Account),
             pools: Vector::new(StorageKey::Pools),
             whitelisted_tokens: UnorderedSet::new(StorageKey::Whitelist),
+            guardians: UnorderedSet::new(StorageKey::Guardian),
+            state: RunningState::Running,
         }
     }
 }
@@ -83,6 +111,8 @@ impl Contract {
             referral_fee: 0,
             pools: Vector::new(StorageKey::Pools),
             whitelisted_tokens: UnorderedSet::new(StorageKey::Whitelist),
+            guardians: UnorderedSet::new(StorageKey::Guardian),
+            state: RunningState::Running,
         }
     }
 

@@ -48,17 +48,41 @@ impl Contract {
         )
     }
 
+    /// Change state of contract, Only can be called by owner or guardians.
+    #[payable]
+    pub fn change_state(&mut self, state: RunningState) {
+        assert_one_yocto();
+        assert!(self.is_owner_or_guardians(), "{}", ERR100_NOT_ALLOWED);
+
+        if self.state != state {
+            if state == RunningState::Running {
+                // only owner can resume the contract
+                self.assert_owner();
+            }
+            env::log(
+                format!(
+                    "Contract state changed from {} to {} by {}",
+                    self.state,
+                    state,
+                    env::predecessor_account_id()
+                )
+                .as_bytes(),
+            );
+            self.state = state;
+        }
+    }
+
     /// Extend whitelisted tokens with new tokens. Only can be called by owner.
     #[payable]
     pub fn extend_whitelisted_tokens(&mut self, tokens: Vec<ValidAccountId>) {
-        assert!(self.is_owner(), "ERR_NOT_ALLOWED");
+        assert!(self.is_owner_or_guardians(), "ERR_NOT_ALLOWED");
         for token in tokens {
             self.whitelisted_tokens.insert(token.as_ref());
         }
     }
     /// Remove whitelisted token. Only can be called by owner.
     pub fn remove_whitelisted_tokens(&mut self, tokens: Vec<ValidAccountId>) {
-        assert!(self.is_owner(), "ERR_NOT_ALLOWED");
+        assert!(self.is_owner_or_guardians(), "ERR_NOT_ALLOWED");
         for token in tokens {
             self.whitelisted_tokens.remove(token.as_ref());
         }
@@ -66,13 +90,17 @@ impl Contract {
 
     pub fn modify_admin_fee(&mut self, exchange_fee: u32, referral_fee: u32) {
         self.assert_owner();
-        assert!(exchange_fee + referral_fee <= FEE_DIVISOR, "ERR_ILLEGAL_FEE");
+        assert!(
+            exchange_fee + referral_fee <= FEE_DIVISOR,
+            "ERR_ILLEGAL_FEE"
+        );
         self.exchange_fee = exchange_fee;
         self.referral_fee = referral_fee;
     }
 
-    pub(crate) fn is_owner(&self) -> bool {
+    pub(crate) fn is_owner_or_guardians(&self) -> bool {
         env::predecessor_account_id() == self.owner_id
+            || self.guardians.contains(&env::predecessor_account_id())
     }
 
     pub(crate) fn assert_owner(&self) {
@@ -81,5 +109,15 @@ impl Contract {
             self.owner_id,
             "ERR_NOT_ALLOWED"
         );
+    }
+
+    /// Migration function from v2 to v2.
+    /// For next version upgrades, change this function.
+    #[init(ignore_state)]
+    // [AUDIT_09]
+    #[private]
+    pub fn migrate() -> Self {
+        let contract: Contract = env::state_read().expect(ERR103_NOT_INITIALIZED);
+        contract
     }
 }
