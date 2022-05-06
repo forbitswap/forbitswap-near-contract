@@ -118,6 +118,7 @@ impl Contract {
 
     #[payable]
     pub fn add_simple_pool(&mut self, tokens: Vec<ValidAccountId>, fee: u32) -> u64 {
+        self.assert_contract_running();
         check_duplicate_tokens(&tokens);
         self.internal_check_existed_pool(&tokens);
         self.internal_add_pool(Pool::SimplePool(SimplePool::new(
@@ -137,6 +138,7 @@ impl Contract {
         amounts: Vec<U128>,
         min_amounts: Option<Vec<U128>>,
     ) {
+        self.assert_contract_running();
         assert!(
             env::attached_deposit() > 0,
             "Requires attached deposit of at least 1 yoctoNEAR"
@@ -168,6 +170,7 @@ impl Contract {
     #[payable]
     pub fn remove_liquidity(&mut self, pool_id: u64, shares: U128, min_amounts: Vec<U128>) {
         assert_one_yocto();
+        self.assert_contract_running();
         let prev_storage = env::storage_usage();
         let sender_id = env::predecessor_account_id();
         let mut pool = self.pools.get(pool_id).expect("ERR_NO_POOL");
@@ -204,6 +207,7 @@ impl Contract {
         actions: Vec<Action>,
         referral_id: Option<ValidAccountId>,
     ) -> ActionResult {
+        self.assert_contract_running();
         let sender_id = env::predecessor_account_id();
         let mut account = self.internal_unwrap_account(&sender_id);
         // Validate that all tokens are whitelisted if no deposit (e.g trade with access key)
@@ -230,6 +234,7 @@ impl Contract {
 
     #[payable]
     pub fn swap(&mut self, actions: Vec<SwapAction>, referral_id: Option<ValidAccountId>) -> U128 {
+        self.assert_contract_running();
         assert_ne!(actions.len(), 0, "ERR_AT_LEAST_ONE_SWAP");
         U128(
             self.execute_actions(
@@ -263,6 +268,12 @@ impl Contract {
 }
 
 impl Contract {
+    fn assert_contract_running(&self) {
+        match self.state {
+            RunningState::Running => (),
+            _ => env::panic(ERR51_CONTRACT_PAUSED.as_bytes()),
+        };
+    }
     // Adds given pool to the list and returns it's id.
     /// If there is not enough attached balance to cover storage, fails.
     /// If too much attached - refunds it back.
