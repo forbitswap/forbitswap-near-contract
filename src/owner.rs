@@ -112,6 +112,16 @@ impl Contract {
         );
     }
 
+    /// Extend guardians. Only can be called by owner.
+    #[payable]
+    pub fn extend_guardians(&mut self, guardians: Vec<ValidAccountId>) {
+        assert_one_yocto();
+        self.assert_owner();
+        for guardian in guardians {
+            self.guardians.insert(guardian.as_ref());
+        }
+    }
+
     /// Migration function from v2 to v2.
     /// For next version upgrades, change this function.
     #[init(ignore_state)]
