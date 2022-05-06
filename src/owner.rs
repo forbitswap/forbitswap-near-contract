@@ -5,6 +5,7 @@ use near_sdk::env::predecessor_account_id;
 use near_sdk::json_types::WrappedTimestamp;
 
 use crate::utils::{FEE_DIVISOR, GAS_FOR_BASIC_OP};
+use crate::errors::*;
 use crate::*;
 
 #[near_bindgen]
