@@ -57,5 +57,8 @@ pub const ERR41_WRONG_ACTION_RESULT: &str = "E41: wrong action result type";
 pub const ERR_DUPLICATE_TOKENS: &str = "Error: 2 tokens should be different from each other";
 pub const ERR85_NO_POOL: &str = "E85: invalid pool id";
 
-// // Permissions
-// pub const ERR100_NOT_ALLOWED: &str = "E100: no permission to invoke this";
+// owner
+pub const ERR100_NOT_ALLOWED: &str = "E100: no permission to invoke this";
+// pub const ERR101_ILLEGAL_FEE: &str = "E101: illegal fee";
+// pub const ERR102_INVALID_TOKEN_ID: &str = "E102: invalid token id";
+pub const ERR103_NOT_INITIALIZED: &str = "E103: contract is not initialized";

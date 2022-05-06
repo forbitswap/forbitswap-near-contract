@@ -158,6 +158,7 @@ impl Contract {
             .into()
     }
 
+    /// Returns balance of the deposit for given user in the exchange.
     pub fn get_deposited_tokens(&self, account_id: &AccountId) -> HashMap<AccountId, U128> {
         let tokens: HashMap<AccountId, U128> = self
             .internal_unwrap_account(account_id)
@@ -168,14 +169,13 @@ impl Contract {
         tokens
     }
 
-    /// Returns balance of the deposit for given user in the exchange.
-    pub fn get_deposited_token(
-        &self,
-        account_id: ValidAccountId,
-        token_id: ValidAccountId,
-    ) -> U128 {
-        unimplemented!()
-    }
+    // pub fn get_deposited_token(
+    //     &self,
+    //     account_id: ValidAccountId,
+    //     token_id: ValidAccountId,
+    // ) -> U128 {
+    //     unimplemented!()
+    // }
 
     pub fn predict_remove_liquidity(&self, pool_id: u64, shares: U128) -> Vec<U128> {
         let pool = self.pools.get(pool_id).expect("ERR_NO_POOL");
