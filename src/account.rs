@@ -139,8 +139,6 @@ impl Account {
             self.tokens.insert(token, &amount);
         }
     }
-
-
 }
 
 #[near_bindgen]
@@ -258,6 +256,21 @@ impl Contract {
             .expect("ACCOUNT IS NOT REGISTER!!!")
 
         // self.accounts.get(account_id).unwrap()
+    }
+    pub(crate) fn internal_deposit(
+        &mut self,
+        sender_id: &AccountId,
+        token_id: &AccountId,
+        amount: Balance,
+    ) {
+        let mut account = self.internal_unwrap_account(sender_id);
+        assert!(
+            self.whitelisted_tokens.contains(token_id) || account.get_balance(token_id).is_some(),
+            "{}",
+            ERR12_TOKEN_NOT_WHITELISTED
+        );
+        account.deposit(token_id, amount);
+        self.internal_save_account(&sender_id, account);
     }
 
     // Return Option<Account> with accout_id
