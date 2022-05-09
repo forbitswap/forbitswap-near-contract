@@ -159,12 +159,12 @@ impl Contract {
     }
 
     /// Returns balance of the deposit for given user in the exchange.
-    pub fn get_deposited_tokens(&self, account_id: &AccountId) -> HashMap<AccountId, U128> {
-        let tokens: HashMap<AccountId, U128> = self
+    pub fn get_deposited_tokens(&self, account_id: &AccountId) -> Vec<AccountId> {
+        let tokens: Vec<AccountId> = self
             .internal_unwrap_account(account_id)
             .tokens
             .iter()
-            .map(|(token, amount)| (token.clone(), U128(amount)))
+            .map(|(token, amount)| token.clone())
             .collect();
         tokens
     }
