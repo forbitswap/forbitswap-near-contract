@@ -2,7 +2,7 @@
 
 // pub const ERR10_ACC_NOT_REGISTERED: &str = "E10: account not registered";
 pub const ERR11_INSUFFICIENT_STORAGE: &str = "E11: insufficient $NEAR storage deposit";
-// pub const ERR12_TOKEN_NOT_WHITELISTED: &str = "E12: token not whitelisted";
+pub const ERR12_TOKEN_NOT_WHITELISTED: &str = "E12: token not whitelisted";
 pub const ERR13_LP_NOT_REGISTERED: &str = "E13: LP not registered";
 pub const ERR14_LP_ALREADY_REGISTERED: &str = "E14: LP already registered";
 
@@ -17,7 +17,7 @@ pub const ERR25_CALLBACK_POST_WITHDRAW_INVALID: &str =
 // [AUDIT_05]
 // pub const ERR26_ACCESS_KEY_NOT_ALLOWED: &str = "E26: access key not allowed";
 pub const ERR27_DEPOSIT_NEEDED: &str = "E27: attach 1yN to swap tokens not in whitelist";
-// pub const ERR28_WRONG_MSG_FORMAT: &str = "E28: Illegal msg in ft_transfer_call";
+pub const ERR28_WRONG_MSG_FORMAT: &str = "E28: Illegal msg in ft_transfer_call";
 pub const ERR29_ILLEGAL_WITHDRAW_AMOUNT: &str = "E29: Illegal withdraw amount";
 
 // Liquidity operations.
