@@ -7,6 +7,8 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::{ValidAccountId, U128};
 use near_sdk::{env, AccountId, Balance, StorageUsage};
 
+use crate::errors::*;
+
 // USAGE UNIT
 const U128_STORAGE: StorageUsage = 16;
 const U64_STORAGE: StorageUsage = 8;
