@@ -404,7 +404,7 @@ mod tests {
     use super::*;
     use near_contract_standards::storage_management::StorageManagement;
     use near_sdk::test_utils::{accounts, VMContextBuilder};
-    use near_sdk::{testing_env, Balance, MockedBlockchain};
+    use near_sdk::{testing_env, Balance, BlockchainInterface, MockedBlockchain};
 
     const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
@@ -434,6 +434,7 @@ mod tests {
             &token_id.to_string(),
             amount,
         );
+        println!("storage: {}", env::storage_usage());
         assert!(
             contract
                 .accounts
@@ -449,6 +450,7 @@ mod tests {
     #[test]
     #[should_panic("ERR_TRANSFER_AMOUNT_EQUAL_ZERO")]
     fn test_deposit_token_with_zero_amount() {
+        use near_sdk::env;
         let token_id = accounts(3);
         let (_, mut contract) = setup_contract();
         let amount: Balance = 0;
