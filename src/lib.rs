@@ -107,7 +107,7 @@ impl Contract {
         Self {
             owner_id,
             accounts: LookupMap::new(StorageKey::Account),
-            exchange_fee: 0,
+            exchange_fee: 5,
             referral_fee: 0,
             pools: Vector::new(StorageKey::Pools),
             whitelisted_tokens: UnorderedSet::new(StorageKey::Whitelist),
