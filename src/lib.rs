@@ -103,11 +103,11 @@ impl Default for Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new() -> Self {
         Self {
-            owner_id,
+            owner_id: env::current_account_id(),
             accounts: LookupMap::new(StorageKey::Account),
-            exchange_fee: 30,
+            exchange_fee: 5,
             referral_fee: 0,
             pools: Vector::new(StorageKey::Pools),
             whitelisted_tokens: UnorderedSet::new(StorageKey::Whitelist),
@@ -404,7 +404,7 @@ mod tests {
     use super::*;
     use near_contract_standards::storage_management::StorageManagement;
     use near_sdk::test_utils::{accounts, VMContextBuilder};
-    use near_sdk::{testing_env, Balance, MockedBlockchain};
+    use near_sdk::{testing_env, Balance, BlockchainInterface, MockedBlockchain};
 
     const ONE_NEAR: u128 = 1_000_000_000_000_000_000_000_000;
 
@@ -414,7 +414,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .attached_deposit(ONE_NEAR)
             .build());
-        let contract = Contract::new(accounts(0).to_string());
+        let contract = Contract::new();
         (context, contract)
     }
 
@@ -434,6 +434,7 @@ mod tests {
             &token_id.to_string(),
             amount,
         );
+        println!("storage: {}", env::storage_usage());
         assert!(
             contract
                 .accounts
@@ -449,6 +450,7 @@ mod tests {
     #[test]
     #[should_panic("ERR_TRANSFER_AMOUNT_EQUAL_ZERO")]
     fn test_deposit_token_with_zero_amount() {
+        use near_sdk::env;
         let token_id = accounts(3);
         let (_, mut contract) = setup_contract();
         let amount: Balance = 0;
