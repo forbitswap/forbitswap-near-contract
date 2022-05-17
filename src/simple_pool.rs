@@ -177,7 +177,7 @@ impl SimplePool {
     pub fn mint_shares(&mut self, account_id: &AccountId, shares: Balance) {
         if shares == 0 {
             return;
-        }
+        };
         self.shares_total_supply += shares;
         add_to_collection(&mut self.shares, &account_id, shares);
     }
@@ -338,11 +338,6 @@ impl SimplePool {
             )
             .as_bytes(),
         );
-        
-        let fee_charge = amount_in * self.total_fee as u128 / FEE_DIVISOR as u128;
-        let fee_as_share = (U256::from(fee_charge * self.shares_total_supply) / U256::from(self.amounts[in_idx])).as_u128();
-        let first_provider_earn = 80 * fee_as_share / 100;
-        let other_provider_earn = 20 * fee_as_share / 100 / (self.shares.len() - 1) as u128;
 
         let prev_invariant =
             uint_sqrt(U256::from(self.amounts[in_idx]) * U256::from(self.amounts[out_idx]));
