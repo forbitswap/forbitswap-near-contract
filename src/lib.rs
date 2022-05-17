@@ -103,9 +103,9 @@ impl Default for Contract {
 #[near_bindgen]
 impl Contract {
     #[init]
-    pub fn new(owner_id: AccountId) -> Self {
+    pub fn new() -> Self {
         Self {
-            owner_id,
+            owner_id: env::current_account_id(),
             accounts: LookupMap::new(StorageKey::Account),
             exchange_fee: 5,
             referral_fee: 0,
@@ -414,7 +414,7 @@ mod tests {
             .predecessor_account_id(accounts(0))
             .attached_deposit(ONE_NEAR)
             .build());
-        let contract = Contract::new(accounts(0).to_string());
+        let contract = Contract::new();
         (context, contract)
     }
 
