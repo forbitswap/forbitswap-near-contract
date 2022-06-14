@@ -1,4 +1,5 @@
 use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
+use near_sdk::env::log;
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::{serde_json, PromiseOrValue};
 
@@ -16,6 +17,8 @@ enum TokenReceiverMessage {
         referral_id: Option<ValidAccountId>,
         /// List of sequential actions.
         actions: Vec<Action>,
+        /// account for transfer to - LIMIT ORDER
+        user_account_id: Option<ValidAccountId>,
     },
 }
 
@@ -77,12 +80,27 @@ impl FungibleTokenReceiver for Contract {
                 TokenReceiverMessage::Execute {
                     referral_id,
                     actions,
+                    user_account_id,
                 } => {
                     let referral_id = referral_id.map(|x| x.to_string());
                     let out_amounts =
                         self.internal_direct_actions(token_in, amount.0, referral_id, &actions);
-                    for (token_out, amount_out) in out_amounts.into_iter() {
-                        self.internal_send_tokens(sender_id.as_ref(), &token_out, amount_out);
+
+                    if user_account_id.is_none() {
+                        // no account id => normal swap
+                        for (token_out, amount_out) in out_amounts.into_iter() {
+                            self.internal_send_tokens(sender_id.as_ref(), &token_out, amount_out);
+                        }
+                    } else {
+                        // has account id => limit order swap
+                        let _user_account_id = user_account_id.unwrap();
+                        for (token_out, amount_out) in out_amounts.into_iter() {
+                            self.internal_send_tokens(
+                                _user_account_id.as_ref(),
+                                &token_out,
+                                amount_out,
+                            );
+                        }
                     }
                     // Even if send tokens fails, we don't return funds back to sender.
                     PromiseOrValue::Value(U128(0))

@@ -54,6 +54,7 @@ pub const ERR51_CONTRACT_PAUSED: &str = "E51: contract paused";
 // pub const ERR82_INSUFFICIENT_RAMP_TIME: &str = "E82: insufficient ramp time";
 // pub const ERR83_INVALID_AMP_FACTOR: &str = "E83: invalid amp factor";
 // pub const ERR84_AMP_LARGE_CHANGE: &str = "E84: amp factor change is too large";
+pub const ERR85_NO_POOL: &str = "E85: invalid pool id";
 pub const ERR_DUPLICATE_TOKENS: &str = "Error: 2 tokens should be different from each other";
 
 // owner
