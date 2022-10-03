@@ -1,0 +1,22 @@
+draft tomato inform marble spoon snow ketchup poverty man priority mimic banana
+
+cargo build --target wasm32-unknown-unknown --release
+
+near deploy account.testnet target/wasm32-unknown-unknown/release/my_project.wasm
+
+near dev-deploy target/wasm32-unknown-unknown/release/test2.wasm
+
+near view dev-1656385926740-58497558600472 get_name
+
+near call dev-1656385926740-58497558600472 new '{"name": "asjdha"}' --accountId nvkien123.testnet
+
+near call dev-1656406923735-14139236191562 add '{\"name\":\"oke\",\"price\":100,\"category\":5}' --accountId nvkien123.testnet
+
+near call dev-1656471233676-91194808617427 storage_deposit '{"receiver_id": "nvkien123.testnet", "amount": "9000000000"}' --accountId dev-1656471233676-91194808617427
+
+near call dev-1656471233676-91194808617427 ft_transfer '{"receiver_id": "nvkien123.testnet", "amount": "9000000000"}' --accountId dev-1656471233676-91194808617427 --depositYocto 1
+
+near call dev-1657187699052-76197805142101 storage_deposit '' --accountId user15.testnet
+
+/// set network
+export NEAR_ENV=testnet
