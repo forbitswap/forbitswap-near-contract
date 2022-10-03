@@ -7,7 +7,6 @@ use near_sdk::{env, AccountId, Balance};
 use near_sdk::{
     near_bindgen, Promise, PromiseResult,
 };
-
 use near_sdk::{
     serde::{Deserialize, Serialize},
 };
@@ -23,7 +22,7 @@ mod utils;
 pub type Time = u128;
 pub type TokenId = String ;
 pub const TIME_DAY:u128 = 86400 ;
-pub const MIN_TIME: u128 = 2592000 ;
+pub const MIN_TIME: u128 = 30 ;
 
 impl Default for Contract {
     fn default() -> Self {
@@ -162,9 +161,6 @@ impl Contract {
             }
         };
     }
-
-
-
 }
 
 impl Contract {
@@ -258,5 +254,4 @@ impl Contract {
     //     return "tao thanh cong".to_string() ;
     // }
     
-   
 }

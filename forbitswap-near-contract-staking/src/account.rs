@@ -52,13 +52,11 @@ impl Tokens {
             self.time_start = time_start.clone();
             self.time_end = self.time_start + time_about;
     }
-
       /// Deposit amount to the balance of given token.
     pub fn deposit(&mut self ,token: &TokenId, amount: Balance) {
         self.token_id = token.to_string() ;
         self.balance = amount ;
     }
-
 
     pub fn withdraw(&mut self, amount: Balance, time_secons: &Time) ->Balance {
         let mut after_time = 0 ;

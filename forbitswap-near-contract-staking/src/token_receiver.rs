@@ -2,7 +2,6 @@ use near_contract_standards::fungible_token::receiver::FungibleTokenReceiver;
 use near_sdk::{PromiseOrValue};
 use crate::*;
 
-
 #[near_bindgen]
 impl FungibleTokenReceiver for Contract {
     /// Callback on receiving tokens by this contract.

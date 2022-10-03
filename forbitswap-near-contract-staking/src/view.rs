@@ -2,7 +2,6 @@ use near_sdk::{
     serde::{Deserialize, Serialize},
 };
 use near_sdk::{AccountId, Balance};
-
 pub type TokenId = AccountId  ;
 pub type Time = u128 ;
 
