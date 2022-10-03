@@ -1,4 +1,4 @@
-draft tomato inform marble spoon snow ketchup poverty man priority mimic banana
+//draft tomato inform marble spoon snow ketchup poverty man priority mimic banana
 
 cargo build --target wasm32-unknown-unknown --release
 
