@@ -19,4 +19,4 @@ near call dev-1656471233676-91194808617427 ft_transfer '{"receiver_id": "nvkien1
 near call dev-1657187699052-76197805142101 storage_deposit '' --accountId user15.testnet
 
 /// set network
-export NEAR_ENV=testnet
+export NEAR_ENV=testnet 
